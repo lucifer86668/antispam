@@ -4,19 +4,19 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Cal
 from telegram.ext.filters import TEXT, COMMAND
 import re
 
-# Токен вашего бота
+# Bot token
 TOKEN = "7342363820:AAF3zh6emrgvg0aRQxqAAHrUXN_5vIqD1Dk"
 
-# Хранилище сообщений для проверки спама
+# Storage for tracking user messages
 last_messages = {}
 
-# Функция для команды /start
+# /start command handler
 async def start(update: Update, context: CallbackContext):
-    await update.message.reply_text("Привет! Я бот-модератор. Я удаляю ссылки и повторяющиеся сообщения.")
+    await update.message.reply_text("Hi! I am a moderator bot. I delete links and repetitive messages.")
 
-# Фильтр для обработки сообщений
+# Message handler
 async def handle_messages(update: Update, context: CallbackContext):
-    # Проверка на наличие сообщения
+    # Check if the message exists
     if update.message is None or update.message.from_user is None:
         return
 
@@ -24,45 +24,46 @@ async def handle_messages(update: Update, context: CallbackContext):
     chat_id = update.message.chat.id
     message_text = update.message.text
 
-    # Проверка на ссылки
+    # Check for links
     if re.search(r"(https?://|www\.)", message_text):
         await update.message.delete()
-        await context.bot.send_message(chat_id, f"@{update.message.from_user.username}, ссылки запрещены!")
+        await context.bot.send_message(chat_id, f"@{update.message.from_user.username}, links are not allowed!")
         return
 
-    # Проверка на повторяющиеся сообщения
+    # Check for repetitive messages
     if chat_id not in last_messages:
         last_messages[chat_id] = {}
 
     if user_id in last_messages[chat_id]:
         if last_messages[chat_id][user_id] == message_text:
             await update.message.delete()
-            await context.bot.send_message(chat_id, f"@{update.message.from_user.username}, не повторяйтесь!")
+            await context.bot.send_message(chat_id, f"@{update.message.from_user.username}, please do not repeat messages!")
             return
 
-    # Сохранение сообщения для проверки спама
+    # Save the message for spam tracking
     last_messages[chat_id][user_id] = message_text
 
-# Обработчик ошибок
+# Error handler
 async def error_handler(update: Update, context: CallbackContext):
-    print(f"Ошибка: {context.error}")
+    print(f"Error: {context.error}")
 
-# Основная функция запуска
+# Main function
 def main():
-    # Создаем приложение
+    # Create the application
     application = ApplicationBuilder().token(TOKEN).build()
 
-    # Обработка команды /start
+    # Add the /start command handler
     application.add_handler(CommandHandler("start", start))
 
-    # Обработка текстовых сообщений
+    # Add the message handler
     application.add_handler(MessageHandler(TEXT & ~COMMAND, handle_messages))
 
-    # Регистрация обработчика ошибок
+    # Register the error handler
     application.add_error_handler(error_handler)
 
-    # Запуск приложения
+    # Start the bot
     application.run_polling()
 
 if __name__ == '__main__':
     main()
+    
