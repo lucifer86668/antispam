@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackContext
-from telegram.ext.filters import TEXT as Filters
+from telegram.ext.filters import TEXT, COMMAND
 import re
 
 # Токен вашего бота
@@ -48,7 +48,7 @@ def main():
     application.add_handler(CommandHandler("start", start))
 
     # Обработка текстовых сообщений
-    application.add_handler(MessageHandler(Filters.TEXT & ~Filters.COMMAND, handle_messages))
+    application.add_handler(MessageHandler(TEXT & ~COMMAND, handle_messages))
 
     # Запуск приложения
     application.run_polling()
