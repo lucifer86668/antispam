@@ -12,7 +12,7 @@ last_messages = {}
 
 # /start command handler
 async def start(update: Update, context: CallbackContext):
-    """Handles the /start command."""
+    """Handles the /start command in private chats."""
     if update.message:
         await update.message.reply_text(
             "Hi! I am a moderator bot. I delete links and repetitive messages."
@@ -57,7 +57,7 @@ async def handle_channel_post(update: Update, context: CallbackContext):
     message_text = update.channel_post.text
 
     # Check for links in the message
-    if re.search(r"(https?://|www\.)", message_text):
+    if message_text and re.search(r"(https?://|www\.)", message_text):
         await update.channel_post.delete()
         await context.bot.send_message(chat_id, "Links are not allowed in this channel!")
 
@@ -71,10 +71,12 @@ def main():
     """Sets up and runs the bot."""
     application = ApplicationBuilder().token(TOKEN).build()
 
-    # Add handlers for private chats and channels
+    # Add handlers for private chats
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(TEXT, handle_user_messages))  # For private chats
-    application.add_handler(MessageHandler(TEXT, handle_channel_post))  # For channels
+    application.add_handler(MessageHandler(TEXT, handle_user_messages))
+
+    # Add handler for channel posts
+    application.add_handler(MessageHandler(TEXT, handle_channel_post))
 
     # Register the error handler
     application.add_error_handler(error_handler)
