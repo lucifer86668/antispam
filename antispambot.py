@@ -16,6 +16,10 @@ async def start(update: Update, context: CallbackContext):
 
 # Фильтр для обработки сообщений
 async def handle_messages(update: Update, context: CallbackContext):
+    # Проверка на наличие сообщения
+    if update.message is None or update.message.from_user is None:
+        return
+
     user_id = update.message.from_user.id
     chat_id = update.message.chat.id
     message_text = update.message.text
@@ -39,6 +43,10 @@ async def handle_messages(update: Update, context: CallbackContext):
     # Сохранение сообщения для проверки спама
     last_messages[chat_id][user_id] = message_text
 
+# Обработчик ошибок
+async def error_handler(update: Update, context: CallbackContext):
+    print(f"Ошибка: {context.error}")
+
 # Основная функция запуска
 def main():
     # Создаем приложение
@@ -49,6 +57,9 @@ def main():
 
     # Обработка текстовых сообщений
     application.add_handler(MessageHandler(TEXT & ~COMMAND, handle_messages))
+
+    # Регистрация обработчика ошибок
+    application.add_error_handler(error_handler)
 
     # Запуск приложения
     application.run_polling()
